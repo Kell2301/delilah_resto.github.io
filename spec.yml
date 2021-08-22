@@ -1,0 +1,613 @@
+openapi: 3.0.1
+info:
+  title: Delilah Restó
+  description: API de Delilah Restó
+  contact:
+    email: kj.arangoh@gmail.com
+  version: 1.0.0
+externalDocs:
+  description: Github Repository
+  url: https://github.com/Kell2301/delilah_resto.github.io
+servers:
+- url: http://localhost
+tags:
+- name: user
+  description: Operaciones sobre usuarios
+- name: products
+  description: Operaciones sobre Productos
+- name: orders
+  description: Operaciones sobre Pedidos
+paths:
+  /users:
+    get:
+      tags:
+      - user
+      summary: Lista de usuarios
+      description: Usuarios registrados
+      operationId: getUsers
+      parameters:
+      - name: authorization
+        in: header
+        description: Authentication Token
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/user'
+        401:
+          description: El token ha caducado. Por favor, inicie sesión de nuevo.
+          content: {}
+        403:
+          description: Forbidden
+          content: {}
+      
+    post:
+      tags:
+      - user
+      summary: Crear usuario
+      operationId: createUser
+      requestBody:
+        description: Usuario creado
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/user'
+        required: true
+      responses:
+        201:
+          description: Usuario creado con éxito
+          content: {}
+        400:
+          description: Error al validar los datos
+          content: {}
+        409:
+          description: La cuenta ya existe
+          content: {}
+      x-codegen-request-body-name: body
+  /users/login:
+    post:
+      tags:
+      - user
+      summary: Registra al usuario
+      operationId: loginUser
+      requestBody:
+        description: Nombre de usuario y contraseña para iniciar sesión
+        content:
+          '*/*':
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+        required: true
+      responses:
+        200:
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJ1c2VybmFtZSI6IlNvZkdHIiwiZnVsbG5hbWUiOiJTb2ZpYSBHYWxmcmUiLCJlbWFpbCI6InNvZmdnQGdhbCIsInBob25lIjoiMTIzNCIsImRlbGl2ZXJ5X2FkZHJlc3MiOiJtb3J0IDg1IiwicGFzc3dvcmQiOiIxMjM0NSIsInJvbGVfaWQiOjEsImlhdCI6MTU5MjY5Mzc5MSwiZXhwIjoxNTkyNjk4NzcxfQ.DE0jQMTVNWjmA3sgbwFLoFyQKusf7YfcNusQNhPRevc"
+        400:
+          description: El nombre de usuario y / o contraseña es incorrecto
+          content: {}
+      x-codegen-request-body-name: credentials
+  /products:
+    get:
+      tags:
+      - products
+      summary: Menú con cada producto
+      operationId: getMenu
+      responses:
+        200:
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/product_stored'
+        404:
+          description: No encontrado
+          content: {}
+    post:
+      tags:
+      - products
+      summary: Agrega un nuevo producto a la tienda
+      parameters:
+      - name: authorization
+        in: header
+        description: Token de autenticación
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: Producto que debe agregarse a la tienda
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/product_update'
+        required: true
+      responses:
+        201:
+          description: Producto creado con éxito
+          content: {}
+        400:
+          description: Argumentos inválidos
+          content: {}
+        401:
+          description: El token ha caducado. Por favor, inicie sesión de nuevo.
+          content: {}
+        403:
+          description: Forbidden
+          content: {}
+     
+      x-codegen-request-body-name: body
+  /products/{product_id}:
+    get:
+      tags:
+      - products
+      summary: Obtener producto por id
+      parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: object
+        404:
+          description: No encontrado
+          content: {}
+    put:
+      tags:
+      - products
+      summary: Actualizar un producto existente
+      operationId: updateProduct
+      parameters:
+      - name: product_id
+        in: path
+        description: ID del producto para actualizar
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: authorization
+        in: header
+        description: Authentication Token
+        required: true
+        schema:
+          items:
+            type: string
+            format: base64
+            additionalProperties: false   
+        style: simple
+      requestBody:
+        description: Propiedades del producto que deben actualizarse en la tienda
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/product_update'
+        required: true
+      responses:
+        202:
+          description: El producto fue actualizado
+          content: {}
+        401:
+          description: El token ha caducado. Por favor, inicie sesión de nuevo.
+          content: {}
+        403:
+          description: Forbidden
+          content: {}
+        404:
+          description: Producto no encontrado
+          content: {}
+     
+      x-codegen-request-body-name: body
+    delete:
+      tags:
+      - products
+      summary: Elimina un producto
+      operationId: deleteProduct
+      parameters:
+      - name: product_id
+        in: path
+        description: ID de producto para eliminar
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: authorization
+        in: header
+        description: Authentication Token
+        required: true
+        schema:
+          items:
+            type: string
+            format: base64
+            additionalProperties: false  
+        style: simple
+      responses:
+        200:
+          description: El producto fue eliminado
+          content: {}
+        401:
+          description: El token ha caducado. Por favor, inicie sesión de nuevo.
+          content: {}
+        403:
+          description: Forbidden
+          content: {}
+        404:
+          description: No encontrado
+          content: {}
+     
+  /orders:
+    get:
+      tags:
+      - orders
+      summary: Pedidos en la tienda
+      operationId: getOrders
+      parameters:
+      - name: authorization
+        in: header
+        description: Authentication Token
+        required: true
+        schema:
+           items:
+            type: string
+            format: base64
+            additionalProperties: false  
+        style: simple
+      responses:
+        200:
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/orders'
+        400:
+          description: No encontrado
+          content: {}
+     
+     
+    post:
+      tags:
+      - orders
+      summary: Agregar un nuevo pedido a la tienda
+      requestBody:
+        description: Orden que debe agregarse
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/order_sent'
+        required: true
+      responses:
+        201:
+          description: Creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/order_complete'
+        400:
+          description: Error
+          content: {}
+      x-codegen-request-body-name: body
+  /orders/detail:
+    post:
+      tags:
+      - orders
+      summary: Agregar un nuevo detalle de pedido
+      requestBody:
+        description: Detalles del pedido para agregar
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/order_detail'
+        required: true
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/order_detail_created'
+        400:
+          description: Error
+          content: {}
+      x-codegen-request-body-name: body
+  /orders/{order_id}:
+    put:
+      tags:
+      - orders
+      summary: Actualizar el estado de un pedido existente
+      operationId: updateOrderStatus
+      parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: authorization
+        in: header
+        description: Authentication Token
+        required: true
+        schema:
+           items:
+            type: string
+            format: base64
+            additionalProperties: false  
+        style: simple
+      requestBody:
+        description: Estado del pedido que debe actualizarse
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status_id:
+                  type: integer
+                  example: 2
+        required: true
+      responses:
+        200:
+          description: El estado fue modificado
+          content: {}
+        401:
+          description: El token ha caducado. Por favor, inicie sesión de nuevo.
+          content: {}
+        403:
+          description: Forbidden
+          content: {}
+     
+      x-codegen-request-body-name: body
+    delete:
+      tags:
+      - orders
+      summary: Elimina un pedido
+      operationId: deleteOrder
+      parameters:
+      - name: order_id
+        in: path
+        description: ID de pedido para eliminar
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: authorization
+        in: header
+        description: Authentication Token
+        required: true
+        schema:
+           items:
+            type: string
+            format: base64
+            additionalProperties: false  
+        style: simple
+      responses:
+        200:
+          description: El producto fue eliminado
+          content: {}
+        401:
+          description: El token ha caducado. Por favor, inicie sesión de nuevo.
+          content: {}
+        403:
+          description: Forbidden
+          content: {}
+      
+components:
+  schemas:
+    user:
+      type: object
+      properties:
+        username:
+          type: string
+        fullname:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        password:
+          type: string
+        delivery_address:
+          type: string
+        role_id:
+          maximum: 2
+          minimum: 1
+          type: integer
+    product_stored:
+      required:
+      - price
+      type: object
+      properties:
+        product_id:
+          type: integer
+          format: int64
+        product_name:
+          type: string
+        price:
+          type: number
+        description:
+          type: string
+    product_update:
+      required:
+      - name
+      - price
+      type: object
+      properties:
+        name:
+          type: string
+        price:
+          type: number
+        description:
+          type: string
+    orders:
+      type: object
+      properties:
+        order_id:
+          type: number
+        order_time:
+          type: string
+          example: 20:30:16
+        estimated_delivery_time:
+          type: string
+          example: 21:30:16
+        total:
+          type: number
+        user_id:
+          type: number
+        status_id:
+          type: integer
+        payment_id:
+          type: number
+          description: Método de pago elegido por el usuario (1,2,3)
+        Product:
+          type: array
+          items:
+            type: object
+            properties:
+              product_id:
+                type: integer
+                example: 1
+              name:
+                type: string
+                example: Pizza
+              price:
+                type: number
+              description:
+                type: string
+        OrderStatus:
+          type: array
+          items:
+            type: object
+            properties:
+              status_id:
+                type: integer
+                example: 1
+              status_name:
+                type: string
+                example: new
+        Payment:
+          type: array
+          items:
+            type: object
+            properties:
+              payment_id:
+                type: integer
+                example: 1
+              method:
+                type: string
+                example: Cash
+        OrderDetail:
+          type: array
+          items:
+            type: object
+            properties:
+              order_detail_id:
+                type: integer
+              product_id:
+                type: integer
+                example: 2
+              quantity:
+                type: integer
+                example: 1
+              subtotal:
+                type: integer
+                example: 500
+    order_sent:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          example: 3
+        status_id:
+          type: integer
+          example: 1
+        payment_id:
+          type: integer
+          example: 1
+        order_time:
+          type: string
+          example: 22:45:00
+        estimated_delivery_time:
+          type: string
+          example: 23:20:34
+        total:
+          type: integer
+          example: 2000
+    order_complete:
+      type: object
+      properties:
+        order_id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          example: 3
+        status_id:
+          type: integer
+          example: 1
+        payment_id:
+          type: integer
+          example: 1
+        order_time:
+          type: string
+          example: 22:45:00
+        estimated_delivery_time:
+          type: string
+          example: 23:20:34
+        total:
+          type: integer
+          example: 2000
+    order_detail:
+      type: object
+      properties:
+        order_id:
+          type: integer
+          example: 1
+        product_id:
+          type: integer
+          example: 3
+        quantity:
+          type: integer
+          example: 1
+        subtotal:
+          type: integer
+          example: 500
+    order_detail_created:
+      type: object
+      properties:
+        order_detail_id:
+          type: integer
+          example: 1
+        order_id:
+          type: integer
+          example: 1
+        product_id:
+          type: integer
+          example: 2
+        quantity:
+          type: integer
+          example: 1
+        subtotal:
+          type: integer
+          example: 500
